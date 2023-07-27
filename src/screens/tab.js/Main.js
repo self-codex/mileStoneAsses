@@ -9,8 +9,11 @@ import {
 import Header from '../../components/Header';
 import {useDispatch} from 'react-redux';
 import {addWishList} from '../../redux/actions/actions';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
+import Cart from '../../components/Cart';
 
-const data = [
+const domeData = [
   {
     name: 'Item 1',
     price: 12,
@@ -48,12 +51,27 @@ const data = [
   },
 ];
 
+// https://deckofcardsapi.com/api/deck/new/draw/?count=5
+
 const Main = () => {
+  const [data, setData] = useState([]);
+
   const dispatch = useDispatch();
+
+  const getData = async () => {
+    const {data} = await axios.get(
+      'https://deckofcardsapi.com/api/deck/new/draw/?count=5',
+    );
+    setData(data.cards);
+  };
 
   const wishToCart = item => {
     dispatch(addWishList(item));
   };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -66,42 +84,10 @@ const Main = () => {
       <FlatList
         data={data}
         renderItem={({item, index}) => {
+          // console.log(item, 'data');
           return (
-            <View style={styles.itemView}>
-              <Image
-                source={{
-                  uri: item.img,
-                }}
-                style={styles.itemImage}
-              />
-              <View
-                style={{
-                  justifyContent: 'space-between',
-                  flexDirection: 'row',
-                  flex: 1,
-                  alignItems: 'center',
-                  marginRight: 10,
-                }}>
-                <View style={styles.nameView}>
-                  <Text style={styles.nameText}>{item.name}</Text>
-                  <Text style={styles.descText}>{item.description}</Text>
-                  <View style={styles.priceView}>
-                    <Text style={styles.priceText}>{'$' + item.price}</Text>
-                    <Text style={styles.discountText}>
-                      {'$' + item.discountPrice}
-                    </Text>
-                  </View>
-                </View>
-                <View>
-                  <TouchableOpacity
-                    style={[styles.addToCartBtn, {backgroundColor: 'purple'}]}
-                    onPress={() => {
-                      wishToCart(item);
-                    }}>
-                    <Text style={{color: '#fff'}}>Wish List</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+            <View>
+              <Cart item={item} wishToCart={wishToCart} index={index} />
             </View>
           );
         }}
@@ -160,11 +146,16 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   addToCartBtn: {
-    backgroundColor: 'green',
+    // backgroundColor: 'green',
     padding: 6,
     borderRadius: 10,
     alignItems: 'center',
     paddingHorizontal: 10,
     marginVertical: 5,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    // color: 'green',
   },
 });
